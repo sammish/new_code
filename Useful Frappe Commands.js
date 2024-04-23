@@ -4,6 +4,9 @@ bench --site erp.biosme.com set-admin-password @Biosme
 
 bench --site {site} backup --with-files
 
+bench --site site_name restore --force --encryption-key YOUR_ENCRYPTION_KEY /tmp/file_name
+
+
 INFO: A newer version of bench is available: 5.2.0 → 5.2.1
 pip3 install --upgrade frappe-bench
 python3.10 -m pip install --upgrade pip
