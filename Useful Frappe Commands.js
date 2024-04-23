@@ -10,6 +10,8 @@ with file restore
 
 bench --site YOUR_SITE_NAME restore --force --encryption-key YOUR_ENCRYPTION_KEY /FILE_PATH --with-public-files /FILE_PATH --with-private-files /FILE_PATH 
 
+Update SQL
+UPDATE tabSingles SET value = ‘0’ WHERE tabSingles.doctype = 'System Settings' AND tabSingles.field = 'disable_user_pass_login';
 
 INFO: A newer version of bench is available: 5.2.0 → 5.2.1
 pip3 install --upgrade frappe-bench
