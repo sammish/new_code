@@ -1,0 +1,31 @@
+xcode-select --install
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+nano ~/.bash_profile
+export PATH="/opt/homebrew/bin:$PATH"
+source ~/.bash_profile   # or ~/.bashrc if you're using that file
+echo $PATH
+brew install python@3.10 git redis mariadb@10.6 node@14
+brew reinstall python@3.10
+brew reinstall gdbm
+
+nano /opt/homebrew/etc/my.cnf
+
+[mysqld]
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+bind-address = 127.0.0.1
+
+[mysql]
+default-character-set = utf8mb4
+
+brew services restart mariadb@10.6
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew update
+arch -arm64 brew install node
+
+
+sudo -H pip3 install frappe-bench
+bench init frappe-bench --frappe-branch version-15
