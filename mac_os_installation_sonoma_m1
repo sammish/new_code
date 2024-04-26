@@ -3,9 +3,9 @@ xcode-select --install
 
 nano ~/.bash_profile
 export PATH="/opt/homebrew/bin:$PATH"
-export PATH="/path/to/python/bin:$PATH"
-export PATH="/path/to/nodejs/bin:$PATH"
-source ~/.bash_profile   # or ~/.bashrc if you're using that file
+export PATH="/opt/homebrew/lib:$PATH"
+export PATH="/opt/homebrew/nodejs/bin:$PATH"
+source ~/.bash_profile
 echo $PATH
 brew install python@3.10 git redis mariadb@10.6 node@14
 brew reinstall python@3.10
