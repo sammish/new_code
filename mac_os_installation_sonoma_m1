@@ -3,6 +3,8 @@ xcode-select --install
 
 nano ~/.bash_profile
 export PATH="/opt/homebrew/bin:$PATH"
+export PATH="/path/to/python/bin:$PATH"
+export PATH="/path/to/nodejs/bin:$PATH"
 source ~/.bash_profile   # or ~/.bashrc if you're using that file
 echo $PATH
 brew install python@3.10 git redis mariadb@10.6 node@14
@@ -21,6 +23,14 @@ bind-address = 127.0.0.1
 default-character-set = utf8mb4
 
 brew services restart mariadb@10.6
+
+brew install pyenv
+pyenv install 3.9.6
+pyenv global 3.9.6
+
+
+
+
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 brew update
