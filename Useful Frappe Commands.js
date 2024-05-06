@@ -6,6 +6,8 @@ bench --site {site} backup --with-files
 
 bench --site site_name restore --force --encryption-key YOUR_ENCRYPTION_KEY /tmp/file_name
 
+Bisome key:- HO-SJsoFoJYRPJfh5pGH5Llor1VjHiRcHbiqp2NAWOI=
+
 with file restore
 
 bench --site YOUR_SITE_NAME restore --force --encryption-key YOUR_ENCRYPTION_KEY /FILE_PATH --with-public-files /FILE_PATH --with-private-files /FILE_PATH 
