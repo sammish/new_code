@@ -78,6 +78,8 @@ sudo chmod a+x /usr/bin/wk*
 
 sudo chmod o+x /home/frappe
 sudo -H pip3 install frappe-bench
+( New change sudo pipx install frappe-bench )
+
 bench init frappe-bench --frappe-branch version-15
 cd frappe-bench
 sudo bench setup production frappe --yes
