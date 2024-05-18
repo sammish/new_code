@@ -68,6 +68,7 @@ nvm install 18
 sudo apt-get install npm
 sudo apt update && sudo apt install nginx -y
 sudo npm install -g yarn
+npm install -g npm@10.8.0
 sudo apt-get install xvfb libfontconfig wkhtmltopdf
 cd /tmp
 sudo apt-get install -y xfonts-75dpi
