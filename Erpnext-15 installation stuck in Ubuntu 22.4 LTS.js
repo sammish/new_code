@@ -78,7 +78,8 @@ sudo cp /usr/local/bin/wkhtmlto* /usr/bin/
 sudo chmod a+x /usr/bin/wk*
 
 sudo chmod o+x /home/frappe
-sudo -H pip3 install frappe-bench or sudo -H pip3 install frappe-bench --break-system-packages
+sudo -H pip3 install frappe-bench 
+sudo apt-get install fail2ban
 bench init frappe-bench --frappe-branch version-15
 cd frappe-bench
 sudo bench setup production frappe --yes
