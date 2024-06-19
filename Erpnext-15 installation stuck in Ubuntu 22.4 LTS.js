@@ -98,6 +98,8 @@ bench config dns_multitenant on
 bench update --requirements
 
 If error
+sudo apt-get install supervisor
+
 bench setup socketio
 bench setup supervisor
 bench setup redis
