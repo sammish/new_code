@@ -83,6 +83,8 @@ frappe.ui.form.on('Sales Invoice', {
 	    frm.toggle_display("incoterm", false);
 	    frm.toggle_display("named_place", false);
 	    frm.toggle_display("scan_barcode", false);
+	    frm.toggle_display("time_sheet_list", false);
+	    frm.toggle_display("subscription_section", false);
 	}
 });
 frappe.ui.form.on('Asset', {
