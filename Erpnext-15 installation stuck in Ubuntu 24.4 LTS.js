@@ -81,6 +81,7 @@ sudo -H pip3 install frappe-bench --break-system-packages
 sudo apt install python3.12-venv
 bench init frappe-bench --frappe-branch version-15
 cd frappe-bench
+sudo /usr/bin/python3 -m pip install ansible --break-system-packages
 sudo bench setup production frappe --yes
 sudo nano /etc/supervisor/supervisord.conf
 chmod=0770
