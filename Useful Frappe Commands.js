@@ -1,3 +1,9 @@
+bench setup requirements --python
+bench build
+bench migrate
+bench restart
+
+
 npx browserslist@latest --update-db
 
 bench --site erp.biosme.com set-admin-password @Biosme
