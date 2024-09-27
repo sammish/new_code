@@ -1,5 +1,6 @@
 bench setup requirements --python
 bench build
+bench setup requirements
 bench migrate
 bench restart
 
