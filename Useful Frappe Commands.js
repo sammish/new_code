@@ -3,6 +3,7 @@ bench build
 bench setup requirements
 bench migrate
 bench restart
+bench update --reset && bench setup requirements && bench build && bench restart && bench setup requirements --python && bench build && bench setup requirements && bench migrate && python3.10 -m pip install --upgrade pip && pip3 install --upgrade frappe-bench 
 
 
 npx browserslist@latest --update-db
