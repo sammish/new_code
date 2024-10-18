@@ -1,6 +1,8 @@
 ssh -p 8763 intozi@api.intozi.io
 ssh-keygen -R
 lsb_release -a
+hostnamectl
+sudo hostnamectl set-hostname new-hostname
 
 
 sudo adduser frappe
