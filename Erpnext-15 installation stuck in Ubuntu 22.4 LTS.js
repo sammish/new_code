@@ -3,7 +3,7 @@ ssh-keygen -R
 lsb_release -a
 hostnamectl
 sudo hostnamectl set-hostname new-hostname
-
+df
 
 sudo adduser frappe
 sudo usermod -aG sudo frappe
