@@ -114,6 +114,7 @@ bench setup add-domain www.domain_name.in
 sudo -H bench setup lets-encrypt [site-name] --custom-domain [custom-domain]
 
 bench get-app https://github.com/8848digital/KSA.git
+bench get-app --branch invoice https://github.com/exvas/posnext.git
 bench get-app erpnext --branch version-15
 bench get-app --branch version-15 https://github.com/frappe/hrms.git
 bench get-app --branch version-15 https://github.com/teambackoffice/service-pro.git
