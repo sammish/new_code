@@ -1,1 +1,4 @@
 
+yarn add workbox-build@^7.0.0 workbox-window@^7.0.0
+yarn add @tiptap/core@^2.6.6
+yarn install --legacy-peer-deps
