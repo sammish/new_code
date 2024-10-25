@@ -1,0 +1,3 @@
+git remote remove upstream
+git remote add remote_name url
+      
