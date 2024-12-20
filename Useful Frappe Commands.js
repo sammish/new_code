@@ -7,6 +7,9 @@ bench update --reset && bench setup requirements && bench build && bench restart
 
 bench --site site_name scheduler resume
 
+letterhead
+<img src="/files/Hydrotech_footer.jpeg" style="width: 100%;">
+
 
 npx browserslist@latest --update-db
 
