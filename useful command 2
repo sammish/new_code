@@ -1,0 +1,8 @@
+    {% if letter_head and not no_letterhead -%}
+        <div class="letter-head">{{ letter_head }}</div>
+        {%- endif %}
+
+
+     {% if doc.name %}
+            <img src="data:image/png;base64, {{ get_zatca_phase_1_qr_for_invoice(doc.name) }}">
+        {% endif %}
