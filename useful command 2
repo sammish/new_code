@@ -9,6 +9,6 @@
 
 
 
-frappe.db.sql("UPDATE `tabJQuotation` SET status = 'Ordered' WHERE status = 'Expired'")
+frappe.db.sql("UPDATE `tabQuotation` SET status = 'Ordered' WHERE status = 'Expired'")
 frappe.db.sql("UPDATE `tabJQuotation` SET status =Expired WHERE name= 'JE05366'")
 frappe.db.commit()
