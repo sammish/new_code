@@ -25,6 +25,7 @@ frappe.db.sql(f"""
 # Commit the changes
 frappe.db.commit()
 
+frappe.db.sql("DELETE FROM `tabJournal Entry` WHERE name='JE05366'")
 
 
 
