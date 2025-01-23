@@ -13,6 +13,21 @@ frappe.db.sql("UPDATE `tabQuotation` SET status = 'Ordered' WHERE status = 'Expi
 frappe.db.sql("UPDATE `tabJQuotation` SET status =Expired WHERE name= 'JE05366'")
 frappe.db.commit()
 
+start_entry = "ACC-GLE-2024-16442"
+end_entry = "ACC-GLE-2024-16461"
+
+# Execute the delete query
+frappe.db.sql(f"""
+    DELETE FROM `tabGL Entry` 
+    WHERE name BETWEEN '{start_entry}' AND '{end_entry}'
+""")
+
+# Commit the changes
+frappe.db.commit()
+
+
+
+
  frappe.get_doc("Work Orders", "DGWO250082").update({"status": "To Deliver and Invoice"}).save(ignore_permissions=True) and frappe.db.commit()
 
 https://erp.exahertz.com/api/method/crosschex_cloud.api.attendance.make_attendace
