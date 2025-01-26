@@ -7,7 +7,7 @@
             <img src="data:image/png;base64, {{ get_zatca_phase_1_qr_for_invoice(doc.name) }}">
         {% endif %}
 
-
+frappe.db.sql("UPDATE `tabWork Orders` SET status = 'To Deliver and Invoice' WHERE status = 'To Manufacturing'")
 
 frappe.db.sql("UPDATE `tabQuotation` SET status = 'Ordered' WHERE status = 'Expired'")
 frappe.db.sql("UPDATE `tabJQuotation` SET status =Expired WHERE name= 'JE05366'")
