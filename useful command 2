@@ -36,4 +36,4 @@ https://erp.exahertz.com/api/method/crosschex_cloud.api.attendance.make_attendac
 
 
 Windows app integration TLS error
-bench --site {site.name} set-config -p allow_cors "*"
+bench --site posnow.teambackoffice.com set-config -p allow_cors '"*"'
