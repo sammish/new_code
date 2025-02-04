@@ -5,6 +5,9 @@ hostnamectl
 sudo hostnamectl set-hostname new-hostname
 df
 
+sudo apt update && sudo apt install nano -y 
+sudo nano /etc/hosts
+
 sudo adduser frappe
 sudo usermod -aG sudo frappe
 su frappe
