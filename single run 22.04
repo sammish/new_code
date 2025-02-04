@@ -80,7 +80,7 @@ sudo -H pip3 install frappe-bench && \
 sudo apt-get install fail2ban -y && \
 bench init frappe-bench --frappe-branch version-15 && \
 cd frappe-bench && \
-sudo bench setup production frappe --yes && \
+sudo bench setup production frappe --yes
 
 sudo nano /etc/supervisor/supervisord.conf
 chmod=0770
