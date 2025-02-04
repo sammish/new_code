@@ -114,6 +114,6 @@ bench setup requirements && \
 bench get-app --branch version-15 https://github.com/frappe/hrms.git && \
 pip install --upgrade frappe-bench && \
 bench setup requirements
-https://github.com/lavaloon-eg/ksa_compliance.git && \
+bench get-app https://github.com/lavaloon-eg/ksa_compliance.git && \
 pip install --upgrade frappe-bench && \
 bench setup requirements
