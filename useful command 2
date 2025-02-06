@@ -27,7 +27,8 @@ frappe.db.commit()
 
 frappe.db.sql("DELETE FROM `tabJournal Entry` WHERE name='JE05366'")
 
-
+frappe.db.sql("DELETE FROM `tabJournal Entry` WHERE name='JE05366'")
+frappe.db.commit()
 
  frappe.get_doc("Work Orders", "DGWO250082").update({"status": "To Deliver and Invoice"}).save(ignore_permissions=True) and frappe.db.commit()
 
