@@ -1,0 +1,98 @@
+# Setting Up ZATCA CLI with OpenJDK 11
+
+## 📥 Step 1: Download and Extract ZATCA CLI
+
+### Download in the Home Folder
+Run the following command to download the ZATCA CLI:
+```bash
+wget https://github.com/lavaloon-eg/zatca-cli/releases/download/2.5.0/zatca-cli-2.5.0.zip
+```
+
+### Extract the ZIP File
+```bash
+unzip zatca-cli-2.5.0.zip -d zatca-cli-2.5.0
+rm -f zatca-cli-2.5.0.zip
+cd /home/frappe/zatca-cli-2.5.0
+```
+
+---
+
+## 📥 Step 2: Download and Extract OpenJDK 11
+
+### Download OpenJDK 11
+```bash
+wget https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.23+9/OpenJDK11U-jre_x64_linux_hotspot_11.0.23_9.tar.gz
+```
+
+### Extract OpenJDK 11
+```bash
+sudo tar -xvzf OpenJDK11U-jre_x64_linux_hotspot_11.0.23_9.tar.gz -C /home/frappe/zatca-cli-2.5.0
+```
+
+---
+
+## ⚙️ Step 3: Set Up JAVA_HOME and PATH
+
+### Configure Environment Variables
+Run the following commands to set up Java:
+```bash
+export JAVA_HOME=/home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre
+export PATH=$JAVA_HOME/bin:$PATH
+```
+
+### Verify Java Environment Variables
+```bash
+echo $JAVA_HOME
+ls -l $JAVA_HOME/bin/java
+```
+
+---
+
+## 🚀 Step 4: Test Java Installation
+Run the following command to check if Java is installed correctly:
+```bash
+java -version
+```
+
+### Expected Output:
+```bash
+openjdk version "11.0.23" 2024-XX-XX
+OpenJDK Runtime Environment (Adoptium 11.0.23+9) (build 11.0.23+9)
+OpenJDK 64-Bit Server VM (Adoptium 11.0.23+9) (build 11.0.23+9, mixed mode)
+```
+
+---
+
+## 🔧 Step 5: Make JAVA_HOME Permanent
+
+If Java is working correctly, save this configuration so it persists after reboot:
+```bash
+echo 'export JAVA_HOME=/home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre' >> ~/.bashrc
+echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### For Ubuntu Servers (Using /etc/environment Method)
+```bash
+echo 'JAVA_HOME="/home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre"' | sudo tee -a /etc/environment
+source /etc/environment
+```
+
+---
+
+## 📌 Path Information
+
+### CLI Path:
+```bash
+/home/frappe/zatca-cli-2.5.0/zatca-cli-2.5.0/bin/zatca-cli
+```
+
+### Java Home:
+```bash
+/home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre
+```
+
+---
+
+This document provides a step-by-step guide to downloading, extracting, setting up, and configuring ZATCA CLI with OpenJDK 11. Let me know if you need further assistance! 🚀
+
