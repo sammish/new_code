@@ -1,7 +1,7 @@
 Download in Home folder 
 
 
-wget  https://github.com/lavaloon-eg/zatca-cli/releases/download/2.5.0/zatca-cli-2.5.0.zip
+wget https://github.com/lavaloon-eg/zatca-cli/releases/download/2.5.0/zatca-cli-2.5.0.zip
 
 /home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre
 
