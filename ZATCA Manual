@@ -3,6 +3,14 @@ Download in Home folder
 
 wget https://github.com/lavaloon-eg/zatca-cli/releases/download/2.5.0/zatca-cli-2.5.0.zip
 
+unzip zatca-cli-2.5.0.zip -d zatca-cli-2.5.0
+rm -f zatca-cli-2.5.0.zip
+
+wget https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.23+9/OpenJDK11U-jre_x64_linux_hotspot_11.0.23_9.tar.gz
+
+Extract 
+sudo tar -xvzf OpenJDK11U-jre_x64_linux_hotspot_11.0.23_9.tar.gz -C /home/frappe/zatca-cli-2.5.0
+
 /home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre
 
 ✅ Step 1: Set JAVA_HOME and PATH
@@ -23,9 +31,9 @@ java -version
 openjdk version "11.0.23" 2024-XX-XX
 OpenJDK Runtime Environment (Adoptium 11.0.23+9) (build 11.0.23+9)
 OpenJDK 64-Bit Server VM (Adoptium 11.0.23+9) (build 11.0.23+9, mixed mode)
+
 🔧 Step 3: Make JAVA_HOME Permanent
 If Java is working correctly, save this configuration so it persists after reboot.
-
 
 echo 'export JAVA_HOME=/home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre' >> ~/.bashrc
 echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ~/.bashrc
@@ -36,6 +44,11 @@ For Ubuntu Servers (/etc/environment method)
 echo 'JAVA_HOME="/home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre"' | sudo tee -a /etc/environment
 source /etc/environment
 
+Path
 
+CLI Path
+/home/frappe//zatca-cli-2.5.0/bin/zatca-cli
+Java Home
+/home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre
 
 
