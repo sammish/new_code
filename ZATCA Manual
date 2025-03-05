@@ -1,17 +1,12 @@
 Download in Home folder 
 
-
 wget https://github.com/lavaloon-eg/zatca-cli/releases/download/2.5.0/zatca-cli-2.5.0.zip
-
 unzip zatca-cli-2.5.0.zip -d zatca-cli-2.5.0
 rm -f zatca-cli-2.5.0.zip
-
+cd /home/frappe/zatca-cli-2.5.0
 wget https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.23+9/OpenJDK11U-jre_x64_linux_hotspot_11.0.23_9.tar.gz
-
 Extract 
 sudo tar -xvzf OpenJDK11U-jre_x64_linux_hotspot_11.0.23_9.tar.gz -C /home/frappe/zatca-cli-2.5.0
-
-/home/frappe/zatca-cli-2.5.0/jdk-11.0.23+9-jre
 
 ✅ Step 1: Set JAVA_HOME and PATH
 Run the following commands:
@@ -28,6 +23,7 @@ ls -l $JAVA_HOME/bin/java
 
 java -version
 
+Output
 openjdk version "11.0.23" 2024-XX-XX
 OpenJDK Runtime Environment (Adoptium 11.0.23+9) (build 11.0.23+9)
 OpenJDK 64-Bit Server VM (Adoptium 11.0.23+9) (build 11.0.23+9, mixed mode)
