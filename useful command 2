@@ -34,6 +34,8 @@ frappe.db.commit()
 
 https://erp.exahertz.com/api/method/crosschex_cloud.api.attendance.make_attendace
 
+https://erp.exahertz.com/api/method/checkmate.crosschex.attendance.make_attendace
+
 
 
 Windows app integration TLS error
