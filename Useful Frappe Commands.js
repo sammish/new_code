@@ -5,6 +5,8 @@ bench migrate
 bench restart
 bench update --reset && bench setup requirements && bench build && bench restart && bench setup requirements --python && bench build && bench setup requirements && bench migrate && python3.10 -m pip install --upgrade pip && pip3 install --upgrade frappe-bench 
 bench update --reset && bench setup requirements && bench build && bench restart
+bench update --reset --no-backup && bench setup requirements && bench build && bench restart
+
 {{ frappe.db.get_value("Customer", doc.customer, "tax_id") }}
 
 bench --site site_name scheduler resume
