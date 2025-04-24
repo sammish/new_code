@@ -40,3 +40,18 @@ https://erp.exahertz.com/api/method/checkmate.crosschex.attendance.make_attendac
 
 Windows app integration TLS error
 bench --site posnow.teambackoffice.com set-config -p allow_cors '"*"'
+
+
+
+Letterhead
+Heder
+<div id="header-html" class="letter-head-container">
+    {% if letter_head %}
+        <div class="letter-head">{{ letter_head }}</div>
+    {% endif %}
+</div>
+footer
+<div id="footer-html" class="letter-footer-container">
+    {% if footer %}
+        <div class="letter-footer">{{ footer }}</div>
+    {% endif %}
