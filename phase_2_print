@@ -1,0 +1,17 @@
+{% set details = get_phase_2_print_format_details(doc) %}
+
+{% if details %}
+<div class="text-center">
+    {% if details.siaf.qr_image_src %}
+        <img src="{{ details.siaf.qr_image_src }}" width="200" height="200">
+    {% else %}
+        <div class="text-center w-100">
+            <p class="h2 text-danger">{{ _("Error : No Qr code") }}</p>
+        </div>
+    {% endif %}
+</div>
+{% else %}
+    <div class="text-center w-100">
+        <p class="h2 text-danger">{{ doc.company }} : {{ _("Does not have active ZATCA Phase 2 Business Settings") }}</p>
+    </div>
+{% endif %}
