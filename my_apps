@@ -1,0 +1,17 @@
+
+bench get-app --branch version-15 https://github.com/resilient-tech/india-compliance.git
+bench get-app --branch version-15 https://github.com/frappe/payments.git
+bench get-app --branch version-15 https://github.com/frappe/hrms.git
+bench get-app --branch extra-15 https://github.com/teambackoffice/POS-Awesome-V15.git
+bench get-app https://github.com/8848digital/KSA.git
+bench get-app https://github.com/exvas/rawad.git
+bench get-app https://github.com/exvas/extra.git
+bench get-app --branch version-15 https://github.com/teambackoffice/datavalue_theme_15.git
+bench get-app --branch version-15 https://github.com/exvas/beansnseeds.git
+bench get-app --branch version-15 https://github.com/exvas/aabha_homes.git
+bench get-app --branch master https://github.com/lavaloon-eg/ksa_compliance.git
+bench get-app https://github.com/teambackoffice/ksa_vat.git
+bench get-app --branch codfather https://github.com/codfatherlogic/lb_website.git
+bench get-app --branch version-15 https://github.com/exvas/sfs.git
+bench get-app --branch version-15 https://github.com/exvas/staffing.git
+bench get-app --branch main https://github.com/exvas/super_admin.git
