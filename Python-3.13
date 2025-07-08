@@ -1,0 +1,171 @@
+#!/bin/bash
+
+# Frappe Bench Installation Script with Python 3.13
+# Updated for Python 3.13 compatibility
+
+# Update system and install nano
+sudo apt update && sudo apt install nano -y
+
+# Edit hosts file (manual step)
+echo "Please edit /etc/hosts file manually:"
+echo "sudo nano /etc/hosts"
+read -p "Press Enter to continue after editing hosts file..."
+
+# Create frappe user and add to sudo group
+sudo adduser frappe
+sudo usermod -aG sudo frappe
+
+# Switch to frappe user
+echo "Switching to frappe user..."
+su frappe << 'EOF'
+
+# Update system packages
+sudo apt-get update && sudo apt-get upgrade -y
+
+# Add deadsnakes PPA for Python versions
+sudo add-apt-repository ppa:deadsnakes/ppa -y
+sudo apt update
+
+# Install Python 3.13 and related packages
+sudo apt install python3.13 python3.13-venv python3.13-dev python3.13-distutils -y
+
+# Remove and reinstall python3-apt for compatibility
+sudo apt remove --purge python3-apt -y
+sudo apt install python3-apt -y
+
+# Clean up packages
+sudo apt autoremove -y
+
+# Install curl
+sudo apt-get install curl -y
+
+# Download and install pip for Python 3.13
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3.13 get-pip.py --user
+
+# Install additional Python tools
+sudo apt-get install python3-pip -y
+sudo apt install cython3 -y
+sudo apt-get install software-properties-common -y
+
+# Install MariaDB
+sudo apt install mariadb-server -y
+sudo mysql_secure_installation
+
+# Install MariaDB development libraries
+sudo apt-get install libmysqlclient-dev -y
+
+# Configure MariaDB
+echo "Configuring MariaDB..."
+sudo tee /etc/mysql/mariadb.conf.d/50-server.cnf > /dev/null << 'MYSQL_EOF'
+[server]
+user = mysql
+pid-file = /run/mysqld/mysqld.pid
+socket = /run/mysqld/mysqld.sock
+basedir = /usr
+datadir = /var/lib/mysql
+tmpdir = /tmp
+lc-messages-dir = /usr/share/mysql
+bind-address = 127.0.0.1
+query_cache_size = 16M
+log_error = /var/log/mysql/error.log
+
+[mysqld]
+innodb-file-format=barracuda
+innodb-file-per-table=1
+innodb-large-prefix=1
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+innodb-read-only-compressed=FALSE
+max_allowed_packet= 1300M
+wait_timeout= 60000
+innodb_force_recovery = 1
+net_read_timeout = 3600
+net_write_timeout = 3600
+
+[mysql]
+default-character-set = utf8mb4
+MYSQL_EOF
+
+# Restart MySQL service
+sudo service mysql restart
+
+# Install and configure Redis
+sudo apt-get install redis-server -y
+sudo systemctl enable redis-server
+
+# Install Node.js using NVM
+curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+source ~/.profile
+nvm install 18
+
+# Install npm and related tools
+sudo apt-get install npm -y
+sudo apt update && sudo apt install nginx -y
+sudo npm install -g yarn
+npm install -g npm@10.8.0
+
+# Install wkhtmltopdf dependencies
+sudo apt-get install xvfb libfontconfig wkhtmltopdf -y
+
+# Download and install wkhtmltopdf
+cd /tmp
+sudo apt-get install -y xfonts-75dpi
+sudo wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+sudo dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+sudo cp /usr/local/bin/wkhtmlto* /usr/bin/
+sudo chmod a+x /usr/bin/wk*
+sudo chmod o+x /home/frappe
+
+# Install frappe-bench using Python 3.13
+python3.13 -m pip install --user frappe-bench
+
+# Install fail2ban for security
+sudo apt-get install fail2ban -y
+
+# Initialize frappe-bench
+~/.local/bin/bench init frappe-bench --frappe-branch version-15 --python python3.13
+
+# Change to frappe-bench directory
+cd frappe-bench
+
+# Setup production
+sudo ~/.local/bin/bench setup production frappe --yes
+
+# Configure supervisor
+sudo tee -a /etc/supervisor/supervisord.conf > /dev/null << 'SUPERVISOR_EOF'
+chmod=0770
+chown=frappe:supervisor
+SUPERVISOR_EOF
+
+# Create supervisor group and add frappe user
+sudo groupadd supervisor
+sudo usermod -aG supervisor frappe
+
+# Restart supervisor
+sudo service supervisor restart
+sudo supervisorctl restart all
+
+# Reboot system
+echo "System will reboot in 10 seconds..."
+sleep 10
+sudo reboot
+
+EOF
+
+# Post-reboot commands (run these after reboot)
+echo "After reboot, run these commands as frappe user:"
+echo "cd frappe-bench"
+echo "sudo ~/.local/bin/bench setup production frappe --yes"
+echo "sudo supervisorctl stop all"
+echo "sudo supervisorctl start all"
+echo "~/.local/bin/bench config dns_multitenant on"
+echo "~/.local/bin/bench update --requirements"
+echo ""
+echo "If you encounter errors, run:"
+echo "sudo apt-get install supervisor"
+echo "~/.local/bin/bench setup socketio"
+echo "~/.local/bin/bench setup supervisor"
+echo "~/.local/bin/bench setup redis"
+echo "sudo supervisorctl reload"
