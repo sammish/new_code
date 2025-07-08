@@ -6,3 +6,8 @@ sudo nano /etc/fstab
 UUID=abcd1234-56ef-78gh-90ij-klmnopqrstuv  /home/frappe  ext4  defaults  0  2
 
 sudo reboot
+
+
+sudo resize2fs /dev/vdb
+
+df -h /home/frappe
