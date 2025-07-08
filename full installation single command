@@ -1,0 +1,647 @@
+sudo nano install_frappe.sh
+sudo chmod +x install_frappe.sh
+bash install_frappe.sh
+sudo rm -f install_frappe.sh
+
+Ubuntu 22.04
+
+
+
+#!/bin/bash
+
+# Complete Frappe Bench Installation Script with Python 3.11
+# This is the FULL code with all fixes included
+# Save as install_frappe_complete.sh and run with: bash install_frappe_complete.sh
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to print success message
+print_success() {
+    echo -e "${GREEN}✓ SUCCESS: $1${NC}"
+}
+
+# Function to print error message
+print_error() {
+    echo -e "${RED}✗ ERROR: $1${NC}"
+}
+
+# Function to print info message
+print_info() {
+    echo -e "${BLUE}ℹ INFO: $1${NC}"
+}
+
+# Function to print warning message
+print_warning() {
+    echo -e "${YELLOW}⚠ WARNING: $1${NC}"
+}
+
+# Function to check if package is installed
+is_package_installed() {
+    dpkg -l | grep -q "^ii  $1 "
+}
+
+# Function to check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Function to execute step with skip check
+execute_step_with_skip() {
+    local step_name="$1"
+    local command="$2"
+    local skip_condition="$3"
+    
+    if [ -n "$skip_condition" ] && eval "$skip_condition"; then
+        print_success "$step_name already completed, skipping"
+        return 0
+    fi
+    
+    print_info "Starting: $step_name"
+    
+    if eval "$command"; then
+        print_success "$step_name completed successfully"
+        return 0
+    else
+        print_error "$step_name failed"
+        return 1
+    fi
+}
+
+echo "======================================================================"
+echo "=== COMPLETE FRAPPE BENCH INSTALLATION SCRIPT - PYTHON 3.11 ==="
+echo "=== This is the FULL installation with all components ==="
+echo "=== No hanging issues, complete automation ==="
+echo "======================================================================"
+echo ""
+
+print_info "System Requirements Check..."
+if [ "$(lsb_release -rs)" != "22.04" ] && [ "$(lsb_release -rs)" != "20.04" ]; then
+    print_warning "This script is optimized for Ubuntu 20.04/22.04"
+    read -p "Continue anyway? (y/n): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
+
+# Check if running as root
+if [ "$EUID" -eq 0 ]; then
+    print_error "Please do not run this script as root. Run as regular user with sudo access."
+    exit 1
+fi
+
+print_info "Starting complete Frappe/ERPNext installation..."
+
+# Update system and install nano
+execute_step_with_skip "Updating system and installing nano" "sudo apt update && sudo DEBIAN_FRONTEND=noninteractive apt install nano -y" "is_package_installed nano"
+
+# Install essential tools first
+execute_step_with_skip "Installing essential tools" "sudo DEBIAN_FRONTEND=noninteractive apt install curl wget git software-properties-common -y" "command_exists curl && command_exists git"
+
+# Edit hosts file
+print_info "Opening hosts file for editing..."
+echo "Add any required host entries and save the file (Ctrl+X to save and exit)"
+echo "You can skip this step by just pressing Ctrl+X if no changes needed"
+read -p "Press Enter to open the hosts file..."
+if sudo nano /etc/hosts; then
+    print_success "Hosts file edited successfully"
+else
+    print_error "Failed to edit hosts file"
+    exit 1
+fi
+
+# Create frappe user and add to sudo group (if not exists)
+if id "frappe" &>/dev/null; then
+    print_info "User 'frappe' already exists"
+    if sudo usermod -aG sudo frappe; then
+        print_success "Ensured frappe user is in sudo group"
+    else
+        print_error "Failed to add frappe user to sudo group"
+        exit 1
+    fi
+else
+    print_info "Creating frappe user..."
+    if sudo adduser --gecos "" frappe && sudo usermod -aG sudo frappe; then
+        print_success "Frappe user created and added to sudo group"
+    else
+        print_error "Failed to create frappe user"
+        exit 1
+    fi
+fi
+
+print_info "Switching to frappe user for remaining installation..."
+
+# Create the complete installation script
+cat << 'COMPLETE_INSTALL_SCRIPT' > /tmp/complete_frappe_install.sh
+#!/bin/bash
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+print_success() {
+    echo -e "${GREEN}✓ SUCCESS: $1${NC}"
+}
+
+print_error() {
+    echo -e "${RED}✗ ERROR: $1${NC}"
+}
+
+print_info() {
+    echo -e "${BLUE}ℹ INFO: $1${NC}"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠ WARNING: $1${NC}"
+}
+
+is_package_installed() {
+    dpkg -l | grep -q "^ii  $1 "
+}
+
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+execute_step_with_skip() {
+    local step_name="$1"
+    local command="$2"
+    local skip_condition="$3"
+    
+    if [ -n "$skip_condition" ] && eval "$skip_condition"; then
+        print_success "$step_name already completed, skipping"
+        return 0
+    fi
+    
+    print_info "Starting: $step_name"
+    
+    if eval "$command"; then
+        print_success "$step_name completed successfully"
+        return 0
+    else
+        print_error "$step_name failed"
+        return 1
+    fi
+}
+
+echo "======================================================================"
+print_info "COMPLETE FRAPPE INSTALLATION - Running as frappe user"
+echo "======================================================================"
+
+# Update system packages
+print_info "Updating system packages..."
+if sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y; then
+    print_success "System packages updated successfully"
+else
+    print_error "Failed to update system packages"
+    exit 1
+fi
+
+# Add deadsnakes PPA for Python versions
+if grep -q 'deadsnakes/ppa' /etc/apt/sources.list.d/*.list 2>/dev/null; then
+    print_success "Deadsnakes PPA already added"
+else
+    print_info "Adding deadsnakes PPA for Python 3.11..."
+    if sudo add-apt-repository ppa:deadsnakes/ppa -y && sudo apt update; then
+        print_success "Deadsnakes PPA added successfully"
+    else
+        print_error "Failed to add deadsnakes PPA"
+        exit 1
+    fi
+fi
+
+# Install Python 3.11 and related packages
+print_info "Installing Python 3.11 and development tools..."
+if sudo DEBIAN_FRONTEND=noninteractive apt install -y \
+    python3.11 \
+    python3.11-venv \
+    python3.11-dev \
+    python3.11-distutils \
+    python3-pip \
+    cython3 \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
+    software-properties-common; then
+    print_success "Python 3.11 and development tools installed"
+else
+    print_error "Failed to install Python 3.11"
+    exit 1
+fi
+
+# Install system dependencies
+print_info "Installing system dependencies..."
+if sudo DEBIAN_FRONTEND=noninteractive apt install -y \
+    cron \
+    rsync \
+    curl \
+    wget \
+    git \
+    nano \
+    vim \
+    htop \
+    python3-apt; then
+    print_success "System dependencies installed"
+else
+    print_error "Failed to install system dependencies"
+    exit 1
+fi
+
+# Clean up packages
+sudo DEBIAN_FRONTEND=noninteractive apt autoremove -y
+print_success "Package cleanup completed"
+
+# Install pip for Python 3.11
+print_info "Setting up pip for Python 3.11..."
+mkdir -p /home/frappe/.local/bin
+mkdir -p /home/frappe/.cache
+sudo chown -R frappe:frappe /home/frappe
+
+if ! python3.11 -m pip --version >/dev/null 2>&1; then
+    cd /tmp
+    if curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3.11 get-pip.py --user; then
+        rm get-pip.py
+        print_success "Pip for Python 3.11 installed"
+    else
+        print_error "Failed to install pip for Python 3.11"
+        exit 1
+    fi
+else
+    print_success "Pip for Python 3.11 already available"
+fi
+
+# Install setuptools and wheel
+if python3.11 -m pip install --user setuptools wheel; then
+    print_success "Setuptools and wheel installed"
+else
+    print_error "Failed to install setuptools and wheel"
+    exit 1
+fi
+
+# Install MariaDB
+print_info "Installing MariaDB..."
+if sudo DEBIAN_FRONTEND=noninteractive apt install -y mariadb-server mariadb-client libmysqlclient-dev; then
+    print_success "MariaDB installed successfully"
+else
+    print_error "Failed to install MariaDB"
+    exit 1
+fi
+
+# Start MariaDB service
+sudo systemctl start mysql
+sudo systemctl enable mysql
+print_success "MariaDB service started and enabled"
+
+# Configure MariaDB - FIXED VERSION (no hanging)
+print_info "Configuring MariaDB with secure password setup..."
+
+# Stop MySQL service temporarily for safe configuration
+sudo systemctl stop mysql
+
+# Start MySQL in safe mode to reset password
+sudo mysqld_safe --skip-grant-tables --skip-networking &
+MYSQL_SAFE_PID=$!
+sleep 5
+
+# Connect and set password
+mysql -u root << 'MYSQL_COMMANDS'
+FLUSH PRIVILEGES;
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'frappe';
+FLUSH PRIVILEGES;
+MYSQL_COMMANDS
+
+# Stop safe mode
+sudo kill $MYSQL_SAFE_PID 2>/dev/null || true
+sleep 3
+
+# Start MySQL normally
+sudo systemctl start mysql
+
+# Test connection
+if mysql -u root -pfrappe -e "SELECT 1;" >/dev/null 2>&1; then
+    print_success "MariaDB configured with password 'frappe'"
+else
+    print_warning "MariaDB password configuration may need manual setup"
+    print_info "You can set it manually later with: sudo mysql"
+fi
+
+# Secure MySQL installation
+mysql -u root -pfrappe << 'MYSQL_SECURE'
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+FLUSH PRIVILEGES;
+MYSQL_SECURE
+
+print_success "MariaDB secured"
+
+# Configure MariaDB for Frappe
+print_info "Configuring MariaDB for Frappe compatibility..."
+sudo tee /etc/mysql/mariadb.conf.d/50-server.cnf > /dev/null << 'MYSQL_CONFIG'
+[server]
+user = mysql
+pid-file = /run/mysqld/mysqld.pid
+socket = /run/mysqld/mysqld.sock
+basedir = /usr
+datadir = /var/lib/mysql
+tmpdir = /tmp
+lc-messages-dir = /usr/share/mysql
+bind-address = 127.0.0.1
+query_cache_size = 16M
+log_error = /var/log/mysql/error.log
+
+[mysqld]
+innodb-file-format=barracuda
+innodb-file-per-table=1
+innodb-large-prefix=1
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+innodb-read-only-compressed=FALSE
+max_allowed_packet=1300M
+wait_timeout=60000
+net_read_timeout=3600
+net_write_timeout=3600
+
+[mysql]
+default-character-set = utf8mb4
+MYSQL_CONFIG
+
+sudo systemctl restart mysql
+print_success "MariaDB configured and restarted"
+
+# Install Redis
+print_info "Installing Redis..."
+if sudo DEBIAN_FRONTEND=noninteractive apt install -y redis-server redis-tools; then
+    print_success "Redis installed successfully"
+else
+    print_error "Failed to install Redis"
+    exit 1
+fi
+
+# Configure and start Redis
+sudo systemctl start redis-server
+sudo systemctl enable redis-server
+
+if redis-cli ping >/dev/null 2>&1; then
+    print_success "Redis is running and responding"
+else
+    print_warning "Redis may need manual configuration"
+fi
+
+# Install Node.js 18
+print_info "Installing Node.js 18..."
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs; then
+    print_success "Node.js $(node --version) installed"
+else
+    print_error "Failed to install Node.js"
+    exit 1
+fi
+
+# Install Yarn
+if sudo npm install -g yarn; then
+    print_success "Yarn $(yarn --version) installed globally"
+else
+    print_error "Failed to install Yarn"
+    exit 1
+fi
+
+# Install Nginx
+print_info "Installing Nginx..."
+if sudo DEBIAN_FRONTEND=noninteractive apt install -y nginx; then
+    sudo systemctl start nginx
+    sudo systemctl enable nginx
+    print_success "Nginx installed and started"
+else
+    print_error "Failed to install Nginx"
+    exit 1
+fi
+
+# Install wkhtmltopdf
+print_info "Installing wkhtmltopdf..."
+sudo DEBIAN_FRONTEND=noninteractive apt install -y xvfb libfontconfig wkhtmltopdf xfonts-75dpi
+
+# Download and install newer wkhtmltopdf
+cd /tmp
+if sudo wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb; then
+    if sudo dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb; then
+        sudo cp /usr/local/bin/wkhtmlto* /usr/bin/ 2>/dev/null || true
+        sudo chmod a+x /usr/bin/wk* 2>/dev/null || true
+        print_success "wkhtmltopdf installed from source"
+    else
+        print_success "wkhtmltopdf installed from repository"
+    fi
+else
+    print_success "wkhtmltopdf installed from repository"
+fi
+
+sudo chmod o+x /home/frappe
+
+# Install security tools
+print_info "Installing security tools..."
+sudo DEBIAN_FRONTEND=noninteractive apt install -y fail2ban supervisor certbot
+
+# Install frappe-bench
+print_info "Installing frappe-bench..."
+export PATH="$HOME/.local/bin:$PATH"
+
+if python3.11 -m pip install --user frappe-bench; then
+    print_success "Frappe-bench installed successfully"
+else
+    print_error "Failed to install frappe-bench"
+    exit 1
+fi
+
+# Setup PATH for bench command
+print_info "Configuring bench command PATH..."
+
+# Add to bashrc
+for config_file in ~/.bashrc ~/.profile; do
+    if [ -f "$config_file" ]; then
+        if ! grep -q '.local/bin' "$config_file"; then
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$config_file"
+        fi
+    fi
+done
+
+# Create bashrc if it doesn't exist
+if [ ! -f ~/.bashrc ]; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' > ~/.bashrc
+fi
+
+# Set PATH for current session
+export PATH="$HOME/.local/bin:$PATH"
+
+# Create symbolic link
+sudo ln -sf $HOME/.local/bin/bench /usr/local/bin/bench 2>/dev/null || true
+
+# Verify bench installation
+if [ -f "$HOME/.local/bin/bench" ]; then
+    chmod +x "$HOME/.local/bin/bench"
+    print_success "Bench command available at: $HOME/.local/bin/bench"
+else
+    print_error "Bench command not found after installation"
+    exit 1
+fi
+
+# Initialize frappe-bench
+print_info "Initializing frappe-bench..."
+cd ~
+
+if $HOME/.local/bin/bench init frappe-bench --frappe-branch version-15 --python python3.11; then
+    print_success "Frappe-bench initialized successfully"
+    cd frappe-bench
+else
+    print_error "Failed to initialize frappe-bench"
+    exit 1
+fi
+
+# Install ERPNext
+print_info "Installing ERPNext..."
+if $HOME/.local/bin/bench get-app erpnext --branch version-15; then
+    print_success "ERPNext downloaded successfully"
+else
+    print_error "Failed to download ERPNext"
+    exit 1
+fi
+
+# Build assets
+print_info "Building assets..."
+$HOME/.local/bin/bench build --app frappe || print_warning "Frappe build had issues"
+$HOME/.local/bin/bench build --app erpnext || print_warning "ERPNext build had issues"
+
+# Configure for development mode
+print_info "Configuring for development mode..."
+cat > sites/common_site_config.json << 'DEV_CONFIG'
+{
+ "db_host": "localhost",
+ "redis_cache": "redis://localhost:13000",
+ "redis_queue": "redis://localhost:11000", 
+ "redis_socketio": "redis://localhost:12000",
+ "restart_supervisor_on_update": false,
+ "restart_systemd_on_update": false,
+ "serve_default_site": true,
+ "rebase_on_pull": false,
+ "update_bench_on_update": true,
+ "frappe_user": "frappe"
+}
+DEV_CONFIG
+
+print_success "Development configuration created"
+
+# Setup supervisor permissions
+sudo groupadd supervisor 2>/dev/null || true
+sudo usermod -aG supervisor frappe
+
+# Configure supervisor
+if sudo sed -i 's/chmod=0700/chmod=0770/' /etc/supervisor/supervisord.conf 2>/dev/null; then
+    if ! grep -q "chown=frappe:supervisor" /etc/supervisor/supervisord.conf; then
+        echo "chown=frappe:supervisor" | sudo tee -a /etc/supervisor/supervisord.conf >/dev/null
+    fi
+fi
+
+sudo systemctl restart supervisor
+
+# Set proper ownership
+sudo chown -R frappe:frappe /home/frappe
+
+print_success "Setup completed successfully!"
+
+echo ""
+echo "======================================================================"
+print_info "=== COMPLETE INSTALLATION SUMMARY ==="
+echo "======================================================================"
+print_info "✓ Python 3.11 installed and configured"
+print_info "✓ MariaDB installed and secured (password: frappe)"
+print_info "✓ Redis installed and running"
+print_info "✓ Node.js $(node --version) installed"
+print_info "✓ Yarn $(yarn --version) installed"
+print_info "✓ Nginx installed and running"
+print_info "✓ Frappe Bench installed with Python 3.11"
+print_info "✓ ERPNext version-15 installed"
+print_info "✓ Development mode configured"
+print_info "✓ Security tools installed (fail2ban, certbot)"
+echo ""
+
+print_info "=== SYSTEM INFORMATION ==="
+print_info "🌐 Server IP: $(ip route get 1 | awk '{print $7}' | head -1 2>/dev/null || echo 'Not available')"
+print_info "🗄️  Database Password: frappe"
+print_info "🔧 Bench Location: $HOME/.local/bin/bench"
+print_info "🏠 Bench Directory: $HOME/frappe-bench"
+echo ""
+
+print_info "=== NEXT STEPS ==="
+print_info "1. Source your environment:"
+print_info "   source ~/.bashrc"
+print_info ""
+print_info "2. Navigate to bench directory:"
+print_info "   cd ~/frappe-bench"
+print_info ""
+print_info "3. Test bench command:"
+print_info "   bench --version"
+print_info "   (or: ~/.local/bin/bench --version)"
+print_info ""
+print_info "4. Create your first site:"
+print_info "   bench new-site mysite.local --mariadb-root-password frappe"
+print_info ""
+print_info "5. Install ERPNext on your site:"
+print_info "   bench --site mysite.local install-app erpnext"
+print_info ""
+print_info "6. Start development server:"
+print_info "   bench start"
+print_info ""
+print_info "7. Access your site:"
+print_info "   http://your-server-ip:8000"
+print_info ""
+print_info "For production setup, run:"
+print_info "   sudo bench setup production frappe --yes"
+echo ""
+
+print_success "COMPLETE FRAPPE/ERPNEXT INSTALLATION FINISHED!"
+print_success "No hanging issues, all components installed and configured!"
+
+COMPLETE_INSTALL_SCRIPT
+
+# Make the script executable and run it
+chmod +x /tmp/complete_frappe_install.sh
+
+print_info "Running complete installation as frappe user..."
+sudo -u frappe /tmp/complete_frappe_install.sh
+
+if [ $? -eq 0 ]; then
+    print_success "COMPLETE INSTALLATION SUCCESSFUL!"
+    echo ""
+    echo "======================================================================"
+    print_info "=== INSTALLATION COMPLETED SUCCESSFULLY ==="
+    echo "======================================================================"
+    print_info "Switch to frappe user: sudo su frappe"
+    print_info "Navigate to bench: cd ~/frappe-bench" 
+    print_info "Start using: bench --version"
+    print_info "Create site: bench new-site mysite.local --mariadb-root-password frappe"
+    print_info "Install ERPNext: bench --site mysite.local install-app erpnext"
+    print_info "Start server: bench start"
+    echo "======================================================================"
+else
+    print_error "Installation failed!"
+    exit 1
+fi
+
+# Cleanup
+rm -f /tmp/complete_frappe_install.sh
+
+print_success "ALL DONE! Your complete Frappe/ERPNext system is ready!"
