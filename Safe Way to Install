@@ -1,0 +1,14 @@
+# 1️⃣ Fetch the app without installing it yet
+git clone -b extra-15 https://github.com/teambackoffice/POS-Awesome-V15.git apps/posawesome
+
+# 2️⃣ Activate the bench's Python env
+source env/bin/activate
+
+# 3️⃣ Install the app in editable mode but skip build isolation (so frappe is already loaded)
+pip install -e apps/posawesome --no-build-isolation --use-pep517
+
+# 4️⃣ Exit the env
+deactivate
+
+# 5️⃣ Install the app to your site
+bench --site yoursite.local install-app posawesome
