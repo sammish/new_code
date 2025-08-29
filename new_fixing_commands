@@ -1,0 +1,15 @@
+bench backup-all-sites
+
+Fix the Issue
+1. Fetch all tags from remote:
+cd apps/frappe
+git fetch --tags
+2. Verify the tag exists:
+git tag | grep v15.76.0
+3. Now checkout the specific version:
+git checkout v15.76.0
+4. Go back to bench directory and update:
+cd ../..  # back to bench directory
+bench setup requirements
+bench migrate
+bench restart
