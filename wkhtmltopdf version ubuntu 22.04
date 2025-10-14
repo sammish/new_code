@@ -1,0 +1,14 @@
+sudo apt-get remove wkhtmltopdf
+
+bash# Download the correct version for Ubuntu 22.04
+wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.jammy_amd64.deb
+
+# Install it
+sudo apt-get install -f ./wkhtmltox_0.12.6-1.jammy_amd64.deb
+
+wkhtmltopdf --version
+
+sudo apt-get update
+sudo apt-get install wkhtmltopdf
+
+sudo apt-get install fontconfig libfreetype6 libjpeg-turbo8 libpng16-16 libx11-6 libxcb1 libxext6 libxrender1 xfonts-75dpi xfonts-96dpi xfonts-base xfonts-encodings xfonts-utils
