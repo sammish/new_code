@@ -51,6 +51,7 @@ sudo chmod o+x /home/frappe
 Developer Mode
 bench set-config developer_mode 1
 bench set-config maintenance_mode 1
+bench --site erp.rotanaglobal.com scheduler resume
 
 { { frappe.utils.rounded(row.amount, 0) }}
 {{frappe.utils.flt(row.rate*10/100*row.qty, 3)}}
