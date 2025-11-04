@@ -1,0 +1,457 @@
+Final deployment method — oropendola_fastapi (step-by-step)
+Target domain: api.oropendola.ai
+Server: Hetzner CPX22 (Ubuntu 22.04)
+Stack: Python 3.11 venv → Uvicorn → systemd → Nginx (reverse proxy) → Let’s Encrypt → Cloudflare (Full Strict).
+User on server: deployuser
+
+PREP: Preparation (do this before touching firewall)
+
+
+Create Hetzner VM: CPX22, Ubuntu 22.04. Add your SSH public key during create.
+
+
+From your workstation note your public IP (for UFW): curl ifconfig.me → save as YOUR_HOME_IP.
+
+
+Ensure you have Cloudflare admin for oropendola.ai.
+
+
+
+STEP 0 — SSH in and create deploy user
+# connect as root
+ssh root@SERVER_IP
+
+# create user and copy your authorized key
+adduser deployuser
+usermod -aG sudo deployuser
+mkdir -p /home/deployuser/.ssh
+cp /root/.ssh/authorized_keys /home/deployuser/.ssh/
+chown -R deployuser:deployuser /home/deployuser/.ssh
+chmod 700 /home/deployuser/.ssh
+chmod 600 /home/deployuser/.ssh/authorized_keys
+
+Test login as deployuser from your workstation:
+ssh deployuser@SERVER_IP
+
+Do not disable root SSH until deployuser is confirmed.
+
+STEP 1 — Install base packages (run as root or via sudo)
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y python3.11 python3.11-venv python3-pip nginx ufw fail2ban git curl wget certbot python3-certbot-nginx
+sudo timedatectl set-timezone Etc/UTC
+
+
+STEP 2 — Safe baseline firewall (do this now to avoid lockout)
+# Keep SSH open to your IP before enabling UFW
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow from YOUR_HOME_IP to any port 22 proto tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw --force enable
+
+Important: Do not add Cloudflare-only rules yet. We add them later in a safe scripted step.
+
+STEP 3 — App files & virtualenv (as deployuser)
+sudo su - deployuser
+mkdir -p ~/apps/oropendola_fastapi
+cd ~/apps/oropendola_fastapi
+python3.11 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install fastapi uvicorn[standard] httpx
+
+Create app file /home/deployuser/apps/oropendola_fastapi/main.py:
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/")
+def root():
+    return {"app": "oropendola_fastapi"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+Quick test:
+source ~/apps/oropendola_fastapi/venv/bin/activate
+uvicorn main:app --host 127.0.0.1 --port 8000
+# curl http://127.0.0.1:8000/health -> should return {"status":"ok"}
+# ctrl-c to stop
+
+
+STEP 4 — systemd service for autostart & restart
+Create /etc/systemd/system/fastapi.service (run as root):
+[Unit]
+Description=FastAPI (uvicorn) for api.oropendola.ai
+After=network.target
+
+[Service]
+User=deployuser
+Group=www-data
+WorkingDirectory=/home/deployuser/apps/oropendola_fastapi
+Environment="PATH=/home/deployuser/apps/oropendola_fastapi/venv/bin"
+ExecStart=/home/deployuser/apps/oropendola_fastapi/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=always
+RestartSec=3
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+
+Enable and start:
+sudo systemctl daemon-reload
+sudo systemctl enable --now fastapi
+sudo systemctl status fastapi
+# logs: sudo journalctl -u fastapi -f
+
+Verify local reachability:
+curl -I http://127.0.0.1:8000/health
+
+
+STEP 5 — Nginx reverse proxy (HTTP -> proxy to Uvicorn)
+Create /etc/nginx/sites-available/api.oropendola.ai:
+server {
+    listen 80;
+    server_name api.oropendola.ai;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name api.oropendola.ai;
+
+    ssl_certificate /etc/letsencrypt/live/api.oropendola.ai/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.oropendola.ai/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+    # Allow streaming/SSE
+    proxy_buffering off;
+    proxy_request_buffering off;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+    location = /health {
+        proxy_pass http://127.0.0.1:8000/health;
+    }
+}
+
+Enable site:
+sudo ln -s /etc/nginx/sites-available/api.oropendola.ai /etc/nginx/sites-enabled/
+sudo nginx -t
+# If test fails because cert missing, remove symlink, run certbot (next step), then re-add symlink.
+
+
+STEP 6 — Get TLS certificate (Let’s Encrypt)
+
+If Cloudflare is proxying (orange cloud), temporarily set it to DNS only (gray cloud) so Certbot can validate, or use DNS challenge. Easiest: set DNS to gray cloud for api while issuing cert.
+
+Run:
+sudo certbot --nginx -d api.oropendola.ai --redirect
+# choose redirect -> yes
+
+Verify cert:
+sudo certbot certificates
+curl -I https://api.oropendola.ai/health
+
+When cert is present and Nginx OK, you may re-enable Cloudflare proxy (orange cloud) and set Cloudflare SSL to Full (strict).
+
+STEP 7 — Cloudflare configuration (production)
+In Cloudflare for oropendola.ai:
+
+
+DNS: A record api → SERVER_IP, proxied (orange cloud) after cert issuance.
+
+
+SSL/TLS: Mode Full (strict).
+
+
+Firewall rule (WAF Skip for API):
+
+
+Expression: (http.host eq "api.oropendola.ai")
+
+
+Action: Skip
+
+
+Skip components: All managed rules, All rate limiting rules, All custom rules, Super Bot Fight Mode (select the options).
+
+
+Place rule: First.
+
+
+
+
+(Optional) Authenticated Origin Pulls: enable and add Cloudflare origin CA cert and Nginx config if you want Cloudflare-only access.
+
+
+(Optional) Rate limiting: configure Cloudflare rate limits for heavy abuse (but skip it for API if you plan to enforce in-app).
+
+
+
+STEP 8 — Lock origin to Cloudflare IPs (safe scripted approach)
+Important: Keep SSH open for your IP before running. Run as root.
+Create /root/add_cloudflare_ufw.sh:
+#!/bin/bash
+set -e
+# Replace YOUR_HOME_IP below with your workstation IP to keep SSH accessible.
+YOUR_HOME_IP="YOUR_HOME_IP"
+
+# Allow SSH from your IP
+ufw allow from $YOUR_HOME_IP to any port 22 proto tcp
+
+# Fetch CF ranges
+CF4=$(curl -s https://www.cloudflare.com/ips-v4)
+CF6=$(curl -s https://www.cloudflare.com/ips-v6)
+
+# Add rules for HTTP/HTTPS from Cloudflare
+for ip in $CF4; do
+  ufw allow from $ip to any port 80 proto tcp comment 'cloudflare-http'
+  ufw allow from $ip to any port 443 proto tcp comment 'cloudflare-https'
+done
+for ip in $CF6; do
+  ufw allow from $ip to any port 80 proto tcp comment 'cloudflare-http'
+  ufw allow from $ip to any port 443 proto tcp comment 'cloudflare-https'
+done
+
+# Now deny non-CF traffic to 80/443 (optional; do only if CF rules confirmed)
+ufw deny 80/tcp
+ufw deny 443/tcp
+
+ufw reload
+ufw status numbered
+
+Make executable and run:
+sudo chmod +x /root/add_cloudflare_ufw.sh
+sudo /root/add_cloudflare_ufw.sh
+
+If you lose SSH, use the Hetzner web console to regain access and revert UFW (sudo ufw disable) — see Troubleshooting below.
+
+STEP 9 — Health checks, logs, and verification
+From your workstation:
+curl -I https://api.oropendola.ai/health
+curl https://api.oropendola.ai/health
+
+Server-side:
+sudo journalctl -u fastapi -f         # watch uvicorn logs
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/nginx/access.log
+
+If you get HTTP/2 200 and JSON from / and /health, deployment succeeded.
+
+STEP 10 — Monitoring & alerting (quick)
+
+
+Uptime monitor: Register https://api.oropendola.ai/health on UptimeRobot or Hetzner monitoring.
+
+
+Resource metrics: Install Prometheus node exporter or use Hetzner Monitoring.
+
+
+Alerting: Create alerts for CPU>70%, Memory>80%, Disk>75% and downtime.
+
+
+
+STEP 11 — Backups & snapshots
+
+
+Enable automated nightly snapshots in Hetzner (or cron rsync to remote storage).
+
+
+Back up:
+
+
+/home/deployuser/apps/oropendola_fastapi (app code and venv)
+
+
+/etc/nginx/sites-available/api.oropendola.ai
+
+
+/etc/systemd/system/fastapi.service
+
+
+/etc/letsencrypt/ (or ensure cert repo)
+
+
+
+
+Use rsync or borg to copy to a separate object store (S3/R2).
+
+
+
+STEP 12 — CI/CD (basic GitHub Actions example)
+Add .github/workflows/deploy.yml (simple push -> deploy via SSH):
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: deployuser
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: "./*"
+          target: "/home/deployuser/apps/oropendola_fastapi"
+      - name: Restart service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: deployuser
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            source /home/deployuser/apps/oropendola_fastapi/venv/bin/activate
+            pip install -r /home/deployuser/apps/oropendola_fastapi/requirements.txt || true
+            sudo systemctl restart fastapi
+
+Store DEPLOY_KEY (private key with access only to deployuser) and SERVER_IP in GitHub Secrets.
+
+STEP 13 — Basic security & rate limiting inside FastAPI (sample)
+Install aiolimiter or use Redis-based token bucket. Minimal per-process limiter example:
+pip install aiolimiter
+Add to main.py:
+from fastapi import FastAPI, Request, HTTPException
+from aiolimiter import AsyncLimiter
+
+app = FastAPI()
+# allow 5 requests per second per process — use Redis for real multi-process limits
+limiter = AsyncLimiter(5, 1)
+
+@app.middleware("http")
+async def rate_limit(request: Request, call_next):
+    try:
+        async with limiter:
+            return await call_next(request)
+    except Exception:
+        raise HTTPException(status_code=429, detail="Too Many Requests")
+
+For production use Redis-based solution (I can provide code).
+
+STEP 14 — Hardening checklist (short)
+
+
+Disable unused services.
+
+
+Fail2ban running.
+
+
+Regular security updates (unattended-upgrades).
+
+
+Use strong SSH (keys only).
+
+
+Rotate API keys and secrets (store in environment variables, not in repo).
+
+
+Restrict /docs and admin endpoints behind Cloudflare Access or auth.
+
+
+Use JWT or API keys for your endpoints.
+
+
+
+TROUBLESHOOTING & ROLLBACK quick commands
+
+
+Show FastAPI logs:
+
+
+sudo journalctl -u fastapi -n 200
+
+
+
+Restart FastAPI:
+
+
+sudo systemctl restart fastapi
+
+
+
+Check Nginx config:
+
+
+sudo nginx -t
+sudo systemctl restart nginx
+
+
+
+Disable UFW (use Hetzner console if SSH locked):
+
+
+sudo ufw disable
+
+
+
+Revert Cloudflare DNS to gray cloud (DNS only) if issuing certs fails.
+
+
+Remove Cloudflare-only UFW rules quickly:
+
+
+# remove CF rules by number after listing:
+sudo ufw status numbered
+sudo ufw delete <num>
+
+
+Appendix: Useful commands (copy/paste)
+View status:
+sudo systemctl status fastapi nginx
+curl -I https://api.oropendola.ai/health
+
+Restart stack:
+sudo systemctl restart fastapi
+sudo systemctl restart nginx
+
+Update system:
+sudo apt update && sudo apt upgrade -y
+
+Backup app:
+rsync -avz /home/deployuser/apps/oropendola_fastapi backup@backup.example:/backups/oropendola_fastapi-$(date +%F)
+
+
+Final notes — cost & scaling
+
+
+CPX22 is a good start. Monitor CPU/RAM. Move to CPX32 or dedicated vCPU when users/requests grow.
+
+
+For heavy LLM inference or on-prem models, use GPU instances (separate hosts) or a cloud provider with GPU support.
+
+
+Implement per-user quotas in DB + router to avoid 'unlimited plan' abuse.
+
+
+
+If you want, I will now:
+
+
+Produce the exact files (systemd unit, Nginx config, UFW script, Certbot steps) for direct copy/paste into the server, or
+
+
+Provide the Redis-based rate limiter code and db schema for subscription/quota enforcement, or
+
+
+Build a ready-to-run Git repository zip containing the app + deploy script.
+
+
+Tell me which one to output now and I’ll deliver the files.
