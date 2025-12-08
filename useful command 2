@@ -55,3 +55,23 @@ footer
     {% if footer %}
         <div class="letter-footer">{{ footer }}</div>
     {% endif %}
+
+#Specific 
+for report_name in ['General Ledger', 'Profit and Loss Statement']:
+    doc = frappe.get_doc('Report', report_name)
+    doc.prepared_report = 0
+    doc.db_update()
+    print(f"Updated {report_name}")
+
+frappe.db.commit()
+
+#All
+reports = frappe.get_all('Report', filters={'prepared_report': 1}, pluck='name')
+print(f"Found {len(reports)} reports with Prepared Report enabled")
+
+for report in reports:
+    frappe.db.set_value('Report', report, 'prepared_report', 0)
+    print(f"Updated: {report}")
+
+frappe.db.commit()
+print("Done!")
