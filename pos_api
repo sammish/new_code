@@ -1,0 +1,120 @@
+API Endpoints
+Method	Endpoint	Auth	Description 
+GET/POST	/api/method/pos_api.auth.test	No	Health check
+POST	/api/method/pos_api.auth.user_login	No	Login with username/password
+GET	/api/method/pos_api.auth.get_user_profile	Yes	Get current user details
+POST	/api/method/pos_api.auth.logout	Yes	End session
+POST	/api/method/pos_api.auth.change_password	Yes	Change password
+GET/POST	/api/method/pos_api.auth.reset_password	No	Request password reset
+GET/POST	/api/method/pos_api.auth.confirm_reset_password	No	Reset password with token
+GET	/api/method/pos_api.auth.validate_session	No	Check if session is valid
+Usage Examples
+Login:
+curl -X POST "http://your-site.com/api/method/pos_api.auth.user_login" \
+  -d "usr=user@example.com&pwd=password123"
+Authenticated request (using API key):
+curl "http://your-site.com/api/method/pos_api.auth.get_user_profile" \
+  -H "Authorization: token api_key:api_secret"
+Authenticated request (using session cookie):
+curl "http://your-site.com/api/method/pos_api.auth.get_user_profile" \
+  -H "Cookie: sid=your_session_id"
+Change password:
+curl -X POST "http://your-site.com/api/method/pos_api.auth.change_password" \
+  -H "Authorization: token api_key:api_secret" \
+  -d "current_password=oldpass&new_password=newpass"
+Request password reset:
+curl -X POST "http://your-site.com/api/method/pos_api.auth.reset_password" \
+  -d "email=user@example.com"
+Confirm password reset:
+curl -X POST "http://your-site.com/api/method/pos_api.auth.confirm_reset_password" \
+  -d "email=user@example.com&reset_token=TOKEN&new_password=newpass"
+
+
+  Item API Endpoints
+Method	Endpoint	Auth	Description
+GET	/api/method/pos_api.api.get_items	Yes	List items with filters
+GET	/api/method/pos_api.api.get_item	Yes	Get single item details
+POST	/api/method/pos_api.api.create_item	Yes	Create new item
+POST	/api/method/pos_api.api.update_item	Yes	Update existing item
+DELETE	/api/method/pos_api.api.delete_item	Yes	Delete item
+GET	/api/method/pos_api.api.get_item_groups	Yes	List item groups
+GET	/api/method/pos_api.api.get_item_by_barcode	Yes	Find item by barcode
+Usage Examples
+Get Items (with pagination & filters):
+curl "http://your-site.com/api/method/pos_api.api.get_items?search=apple&item_group=Products&limit_page_length=20&warehouse=Stores" \
+  -H "Authorization: token api_key:api_secret"
+Get Single Item:
+curl "http://your-site.com/api/method/pos_api.api.get_item?item_code=ITEM-001" \
+  -H "Authorization: token api_key:api_secret"
+Create Item:
+curl -X POST "http://your-site.com/api/method/pos_api.api.create_item" \
+  -H "Authorization: token api_key:api_secret" \
+  -d "item_code=ITEM-001&item_name=Apple&item_group=Products&standard_rate=50&barcode=123456789"
+Update Item:
+curl -X POST "http://your-site.com/api/method/pos_api.api.update_item" \
+  -H "Authorization: token api_key:api_secret" \
+  -d "item_code=ITEM-001&standard_rate=60&disabled=0"
+Get Item by Barcode:
+curl "http://your-site.com/api/method/pos_api.api.get_item_by_barcode?barcode=123456789" \
+  -H "Authorization: token api_key:api_secret"
+
+Here's the JSON response format for the Item List API: Request:
+GET /api/method/pos_api.api.get_items?search=&item_group=&limit_start=0&limit_page_length=20&price_list=Standard Selling&warehouse=Stores
+Response:
+{
+  "success_key": 1,
+  "message": "Items fetched successfully",
+  "items": [
+    {
+      "name": "ITEM-001",
+      "item_code": "ITEM-001",
+      "item_name": "Apple",
+      "item_group": "Products",
+      "stock_uom": "Nos",
+      "description": "Fresh Apple",
+      "image": "/files/apple.jpg",
+      "standard_rate": 50.0,
+      "has_variants": 0,
+      "variant_of": null,
+      "price": 55.0,
+      "stock_qty": 100.0,
+      "barcodes": [
+        {
+          "barcode": "123456789",
+          "barcode_type": "EAN"
+        }
+      ]
+    },
+    {
+      "name": "ITEM-002",
+      "item_code": "ITEM-002",
+      "item_name": "Orange",
+      "item_group": "Products",
+      "stock_uom": "Nos",
+      "description": "Fresh Orange",
+      "image": "/files/orange.jpg",
+      "standard_rate": 40.0,
+      "has_variants": 0,
+      "variant_of": null,
+      "price": 45.0,
+      "stock_qty": 75.0,
+      "barcodes": []
+    }
+  ],
+  "total_count": 150,
+  "limit_start": 0,
+  "limit_page_length": 20
+}
+Error Response:
+{
+  "success_key": 0,
+  "message": "Authentication required!"
+}
+Query Parameters:
+Parameter	Type	Description
+search	string	Search in item_code, item_name, barcode
+item_group	string	Filter by item group
+limit_start	int	Pagination offset (default: 0)
+limit_page_length	int	Items per page (default: 20)
+price_list	string	Price list name for item prices
+warehouse	string	Warehouse for stock qty
