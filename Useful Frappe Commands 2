@@ -83,7 +83,13 @@ bash# Faster, resumable, shows progress
 rsync -avzP user@old-server:~/frappe-bench/sites/site_name/private/backups/ /tmp/backups/
 
 mkdir -p /tmp/backup
-# -a = archive mode
-# -v = verbose  
-# -z = compress during transfer
-# -P = progress + resume partial transfers
+
+# Extract public files
+tar -xvf /tmp/backup/20251207_115523-erp_worldschooloman_com-files.tar
+
+# Extract private files
+tar -xvf /tmp/backup/20251207_115523-erp_worldschooloman_com-private-files.tar
+
+# Then extract
+tar -xvf /tmp/backup/20251207_115523-erp_worldschooloman_com-files.tar -C ~/frappe-bench/sites/erp.worldschooloman.com/public/
+tar -xvf /tmp/backup/20251207_115523-erp_worldschooloman_com-private-files.tar -C ~/frappe-bench/sites/erp.worldschooloman.com/private/
