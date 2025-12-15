@@ -82,6 +82,7 @@ Rsync (Best for Large Files)
 bash# Faster, resumable, shows progress
 rsync -avzP user@old-server:~/frappe-bench/sites/site_name/private/backups/ /tmp/backups/
 
+mkdir -p /tmp/backup
 # -a = archive mode
 # -v = verbose  
 # -z = compress during transfer
