@@ -75,3 +75,14 @@ for report in reports:
 
 frappe.db.commit()
 print("Done!")
+
+
+
+Rsync (Best for Large Files)
+bash# Faster, resumable, shows progress
+rsync -avzP user@old-server:~/frappe-bench/sites/site_name/private/backups/ /tmp/backups/
+
+# -a = archive mode
+# -v = verbose  
+# -z = compress during transfer
+# -P = progress + resume partial transfers
