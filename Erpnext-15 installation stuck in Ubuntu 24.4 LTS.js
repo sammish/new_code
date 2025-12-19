@@ -132,3 +132,6 @@ sudo apt install -y pkg-config \
     libpq-dev
 bench config dns_multitenant on
 bench setup socketio
+cd ~/frappe-bench-2
+sudo bench setup production frappe --yes
+sudo supervisorctl start all
