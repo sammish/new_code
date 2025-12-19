@@ -69,11 +69,7 @@ sudo apt-get install npm
 sudo apt update && sudo apt install nginx -y
 sudo npm install -g yarn
 sudo apt-get install xvfb libfontconfig wkhtmltopdf
-cd /tmp
 sudo apt-get install -y xfonts-75dpi
-sudo wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb
-sudo dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
-sudo cp /usr/local/bin/wkhtmlto* /usr/bin/
 sudo chmod a+x /usr/bin/wk*
 
 sudo chmod o+x /home/frappe
@@ -120,3 +116,19 @@ bench get-app --branch version-15 https://github.com/frappe/payments.git
 source env/bin/activate
 pip install cmake
 bench get-app --branch version-15 https://github.com/Momscode-Technologies/face_app.git
+
+
+Second bench 
+
+sudo apt update
+sudo apt install -y pkg-config \
+    libffi-dev \
+    libssl-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    liblcms2-dev \
+    libblas-dev \
+    libatlas-base-dev \
+    libpq-dev
+bench config dns_multitenant on
+bench setup socketio
