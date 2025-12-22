@@ -135,3 +135,26 @@ bench setup socketio
 cd ~/frappe-bench-2
 sudo bench setup production frappe --yes
 sudo supervisorctl start all
+
+
+
+rm -f restore_site_from_remote.sh
+nano ~/restore_site_from_remote.sh
+chmod +x ~/restore_site_from_remote.sh
+sudo -E -u frappe ./restore_site_from_remote.sh
+
+ frappe-bench-shared
+saas-erp.in
+ frappe@38.54.61.106
+frappe@91.107.214.200
+
+
+cd ~/frappe-bench-15-india
+source env/bin/activate
+pip uninstall -y holidays
+pip install "holidays<=0.34"
+pip install "python-dateutil~=2.8.2"
+deactivate
+bench config dns_multitenant on && sudo -H bench setup lets-encrypt erp.designationqatar.com && sudo bench setup production frappe --yes && bench update --requirements
+sudo bench setup production frappe --yes
+bench update --requirements
