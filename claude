@@ -1,0 +1,17 @@
+cat > ~/.claude/settings.json << 'EOF'
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)"
+    ]
+  }
+}
+EOF
+
+
+cat ~/.claude/settings.json
+
+# Kill any running claude processes
+pkill -f claude
+
+# Then reopen VS Code and start fresh
