@@ -2,12 +2,17 @@ cat > ~/.claude/settings.json << 'EOF'
 {
   "permissions": {
     "allow": [
-      "Bash(*)"
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "Glob",
+      "Grep"
     ]
   }
 }
 EOF
-
 
 cat ~/.claude/settings.json
 
